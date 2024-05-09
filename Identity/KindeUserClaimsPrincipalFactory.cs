@@ -70,6 +70,8 @@ public class AdditionalUserClaimsPrincipalFactory(
         if (authClaimsList.Any(c => c.Type == KindeClaimTypes.DisplayName))
             claims.Add(new Claim(ClaimTypes.Name, authClaimsList.First(x => x.Type == KindeClaimTypes.DisplayName).Value));
 
+        claims.AddRange(authClaimsList.Where(c => c.Type.StartsWith("prop_")));
+
         identity.AddClaims(claims);
 
         return principal;

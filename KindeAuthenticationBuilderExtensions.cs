@@ -65,7 +65,8 @@ public static class KindeAuthenticationBuilderExtensions
                 {
                     var client = new HttpClient();
                     // TODO: cache this?
-                    var response = client.GetAsync(new Uri(Path.Combine(configOptions.Domain, ".well-known/jwks"))).Result;
+                    var response = client.GetAsync(new Uri(Path.Combine(configOptions.Domain, ".well-known/jwks")))
+                        .Result;
                     var responseString = response.Content.ReadAsStringAsync().Result;
                     return JwksHelper.LoadKeysFromJson(responseString);
                 }
@@ -285,10 +286,22 @@ public static class KindeAuthenticationBuilderExtensions
                             new Claim(ClaimTypes.Role,
                                 JsonSerializer.Deserialize<KindeRole>(role.Value)?.Name ?? string.Empty)));
 
+                    // add custom user properties
+                    var userPropertiesClaim =
+                        jsonToken.Claims.FirstOrDefault(c => c.Type == KindeClaimTypes.UserProperties);
+                    if (userPropertiesClaim != null)
+                    {
+                        var properties =
+                            JsonSerializer.Deserialize<Dictionary<string, KindePropertyValue>>(userPropertiesClaim.Value);
+                        if (properties != null)
+                        {
+                            newClaims.AddRange(properties.Select(p => new Claim("prop_" + p.Key, p.Value.Value)));
+                        }
+                    }
+                    
                     ctx.Principal!.AddIdentity(new ClaimsIdentity(newClaims));
-
                     return Task.CompletedTask;
-                }
+                } 
             };
         });
 

@@ -11,4 +11,5 @@ public static class KindeClaimTypes
     public const string Permissions = "permissions";
     public const string Roles = "roles";
     public const string DisplayName = "name";
+    public const string UserProperties = "user_properties";
 }
